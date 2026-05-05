@@ -64,85 +64,82 @@
   <h2>البيانات المحفوظة</h2>
   <div id="dataList"></div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAbtJMRobtsVc9UYc7GXRk3kV3KWuEe-WM",
-      authDomain: "emden-app.firebaseapp.com",
-      projectId: "emden-app",
-      storageBucket: "emden-app.firebasestorage.app",
-      messagingSenderId: "684531562125",
-      appId: "1:684531562125:web:5ff91711236744536e94c4"
-    };
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbtJMRobtsVc9UYc7GXRk3kV3KWuEe-WM",
+    authDomain: "emden-app.firebaseapp.com",
+    databaseURL: "https://emden-app-default-rtdb.firebaseio.com",
+    projectId: "emden-app",
+    storageBucket: "emden-app.firebasestorage.app",
+    messagingSenderId: "684531562125",
+    appId: "1:684531562125:web:5ff91711236744536e94c4"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  firebase.initializeApp(firebaseConfig);
 
-    const form = document.getElementById("form");
-    const dataList = document.getElementById("dataList");
+  const db = firebase.database();
 
-    let allData = [];
+  const form = document.getElementById("form");
+  const dataList = document.getElementById("dataList");
 
-    // حفظ البيانات
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
+  let allData = [];
 
-      const name = document.getElementById("name").value;
-      const code = document.getElementById("code").value;
+  // save
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
 
-      push(ref(db, "messages"), {
-        name: name,
-        code: code
-      });
+    const name = document.getElementById("name").value;
+    const code = document.getElementById("code").value;
 
-      form.reset();
-      alert("تم الحفظ ✅");
+    db.ref("messages").push({
+      name: name,
+      code: code
     });
 
-    // جلب البيانات
-    onValue(ref(db, "messages"), (snapshot) => {
-      allData = [];
+    form.reset();
+  });
 
-      snapshot.forEach((child) => {
-        allData.push(child.val());
-      });
+  // read
+  db.ref("messages").on("value", function(snapshot) {
+    allData = [];
 
-      displayData(allData);
+    snapshot.forEach(function(child) {
+      allData.push(child.val());
     });
 
-    // عرض البيانات
-    function displayData(dataArray) {
-      dataList.innerHTML = "";
+    displayData(allData);
+  });
 
-      dataArray.forEach((data) => {
-        const div = document.createElement("div");
+  function displayData(dataArray) {
+    dataList.innerHTML = "";
 
-        div.innerHTML = `
-          <p><b>الاسم:</b> ${data.name}</p>
-          <p><b>الكود:</b></p>
-          <pre>${data.code}</pre>
-        `;
+    dataArray.forEach(function(data) {
+      const div = document.createElement("div");
 
-        dataList.appendChild(div);
-      });
-    }
+      div.innerHTML = `
+        <p><b>الاسم:</b> ${data.name}</p>
+        <pre>${data.code}</pre>
+      `;
 
-    // البحث
-    document.getElementById("search").addEventListener("input", (e) => {
-      const value = e.target.value.toLowerCase();
-
-      const filtered = allData.filter(item =>
-        item.name.toLowerCase().includes(value) ||
-        item.code.toLowerCase().includes(value)
-      );
-
-      displayData(filtered);
+      dataList.appendChild(div);
     });
+  }
 
-  </script>
+  // search
+  document.getElementById("search").addEventListener("input", function(e) {
+    const value = e.target.value.toLowerCase();
+
+    const filtered = allData.filter(item =>
+      item.name.toLowerCase().includes(value) ||
+      item.code.toLowerCase().includes(value)
+    );
+
+    displayData(filtered);
+  });
+</script>
 
 </body>
 </html>
